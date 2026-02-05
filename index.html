@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scrapbook Unlock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root{
+      --bg:#f4ecdd;
+      --paper:#fffaf1;
+      --card:#f7efe2;
+      --ink:#2c241d;
+      --muted:#6f6256;
+      --stroke:#d9c8af;
+      --accent:#d56b58;
+      --good:#2f9f63;
+      --bad:#c24848;
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      position: relative;
+      font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20px 20px, rgba(213, 107, 88, 0.14) 2px, transparent 3px) 0 0 / 24px 24px,
+        radial-gradient(circle at 12px 12px, rgba(94, 80, 67, 0.12) 1.5px, transparent 2.5px) 0 0 / 24px 24px,
+        radial-gradient(1100px 800px at 10% 0%, rgba(255,255,255,0.7), transparent 55%),
+        radial-gradient(1000px 700px at 90% 20%, rgba(255, 218, 186, 0.35), transparent 60%),
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.012), rgba(0,0,0,0.012) 2px, transparent 2px, transparent 6px),
+        var(--bg);
+      color: var(--ink);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 28px 18px;
+      overflow-x: hidden;
+    }
+
+    #postageLayer{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .stamp{
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border: 9px solid rgba(140, 95, 60, 0.2);
+      border-image: repeating-linear-gradient(
+        0deg,
+        rgba(130, 90, 58, 0.28) 0 10px,
+        transparent 10px 16px
+      ) 10;
+      border-radius: 2px;
+      background: rgba(255, 245, 230, 0.22);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.2);
+    }
+    .stamp::after{
+      content:"";
+      position:absolute;
+      inset: 16px;
+      border: 1px dashed rgba(130, 90, 58, 0.35);
+      border-radius: 2px;
+    }
+
+    .box{
+      width: min(860px, 100%);
+      text-align:left;
+      position: relative;
+      z-index: 1;
+    }
+    .coverPage{
+      width: min(640px, 100%);
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #ddd3c8;
+      border-radius: 4px;
+      box-shadow: 0 16px 34px rgba(90, 60, 35, 0.22);
+      padding: 34px 22px 52px;
+      text-align: center;
+      position: relative;
+      transform: rotate(-1.2deg);
+      z-index: 1;
+    }
+    .coverPage::before,
+    .coverPage::after{
+      content:"";
+      position:absolute;
+      width: 92px;
+      height: 24px;
+      top: -12px;
+      background: rgba(242, 230, 203, 0.9);
+      border: 1px solid rgba(170, 145, 113, 0.22);
+    }
+    .coverPage::before{
+      left: 22px;
+      transform: rotate(-11deg);
+    }
+    .coverPage::after{
+      right: 22px;
+      transform: rotate(9deg);
+    }
+    .coverTitle{
+      margin: 0 0 26px;
+      font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
+      font-size: clamp(34px, 5vw, 52px);
+      line-height: 1.05;
+      font-weight: 800;
+      color: #3f3025;
+    }
+    #coverPageWrap{
+      position: relative;
+      border-radius: 22px;
+      padding: 18px;
+      background: rgba(255, 249, 240, 0.42);
+      border: 1px solid rgba(170, 145, 113, 0.16);
+    }
+    .coverStart{
+      width: min(260px, 100%);
+      margin: 0 auto;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .challengeShell.hidden{
+      display: none;
+    }
+
+    .header{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom: 14px;
+    }
+
+    h1{
+      margin:0;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-size: clamp(22px, 3vw, 34px);
+      font-family: "Trebuchet MS", "Avenir Next", sans-serif;
+      text-align: center;
+    }
+    .sub{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      min-height: 20px;
+      text-align: center;
+    }
+
+    .badge{
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f2e6d6;
+      border: 1px solid var(--stroke);
+      color: var(--muted);
+      font-size: 13px;
+      white-space:nowrap;
+    }
+
+    .progressWrap{
+      margin-top: 10px;
+      background: rgba(112, 83, 55, 0.14);
+      border: 1px solid var(--stroke);
+      height: 10px;
+      border-radius: 999px;
+      overflow:hidden;
+    }
+    .progressFill{
+      height: 10px;
+      width: 0%;
+      background: linear-gradient(90deg, #f1a28b, #d56b58);
+      border-radius: 999px;
+      transition: width .35s ease;
+    }
+
+    .card{
+      margin-top: 14px;
+      background: linear-gradient(180deg, #fbf4e8, #f6ecdd);
+      border: 1px solid #e2d1bb;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(102, 69, 42, 0.22);
+    }
+
+    .prompt{
+      font-size: 20px;
+      line-height: 1.45;
+      margin: 0 0 8px;
+    }
+
+    .guide{
+      margin: 0 0 14px;
+      font-size: 14px;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    .panel{
+      background: rgba(255, 248, 238, 0.92);
+      border: 1px solid #e4d3bc;
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .hidden{ display:none; }
+
+    input, button{
+      width:100%;
+      padding: 13px 12px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.74);
+      color: var(--ink);
+      outline: none;
+    }
+    input::placeholder{ color: #988679; }
+
+    button{
+      cursor:pointer;
+      background: #f2e7d7;
+      transition: transform .06s ease, background .2s ease;
+      font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
+      letter-spacing: 0.02em;
+    }
+    button:hover{ background: #ecdcc7; }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ opacity: .5; cursor:not-allowed; }
+
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .helper{
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .secondary{
+      background: #f0e2cf;
+      color: #4a3d33;
+    }
+    .primary{
+      background: linear-gradient(180deg, #e68670, #cf634d);
+      border-color: #c35846;
+      color: #fff8f5;
+      font-weight: 600;
+    }
+    .primary:hover{ background: linear-gradient(180deg, #ec927b, #d56b58); }
+
+    .feedback{
+      margin: 10px 0 0;
+      font-size: 14px;
+      color: var(--muted);
+      min-height: 20px;
+    }
+    .feedback.good{ color: var(--good); }
+    .feedback.bad{ color: var(--bad); }
+
+    /* Audio meter */
+    #meter{
+      height: 12px;
+      background: rgba(112, 83, 55, 0.14);
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      overflow:hidden;
+      margin-top: 10px;
+    }
+    #meterFill{
+      height: 12px;
+      width: 0%;
+      background: linear-gradient(90deg, #f1a28b, #d56b58);
+      transition: width .06s linear;
+    }
+
+    /* Reveal stage */
+    .stage{
+      margin-top: 16px;
+      border-radius: 18px;
+      border: 1px dashed #d7c2a6;
+      background: rgba(255, 252, 245, 0.65);
+      padding: 20px;
+      min-height: 220px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .polaroid{
+      background: #fff;
+      border: 1px solid #ddd3c8;
+      border-radius: 4px;
+      padding: 12px 12px 46px;
+      width: min(440px, 100%);
+      margin: 0 auto;
+      box-shadow: 0 12px 28px rgba(90, 60, 35, 0.2);
+      transform: rotate(-1.4deg);
+      position: relative;
+    }
+    .polaroid::before,
+    .polaroid::after{
+      content:"";
+      position:absolute;
+      width:84px;
+      height:22px;
+      background: rgba(242, 230, 203, 0.85);
+      border: 1px solid rgba(170, 145, 113, 0.24);
+      top:-11px;
+    }
+    .polaroid::before{
+      left:18px;
+      transform: rotate(-12deg);
+    }
+    .polaroid::after{
+      right:18px;
+      transform: rotate(9deg);
+    }
+    .photoNote{
+      margin: 12px 0 0;
+      font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
+      color: #5e5043;
+      font-size: 18px;
+      text-align: center;
+      letter-spacing: 0.01em;
+    }
+    img{
+      width:100%;
+      max-height: 520px;
+      object-fit: contain;
+      border-radius: 2px;
+      display:none;
+      background: #fff;
+    }
+    img.reveal{
+      display:block;
+      animation: fadeIn .5s ease;
+    }
+    @keyframes fadeIn{
+      from{ opacity:0; transform: translateY(4px); }
+      to{ opacity:1; transform:none; }
+    }
+
+    video, canvas{
+      width:100%;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background:#1e1a17;
+      margin-top: 10px;
+    }
+    canvas{ display:none; }
+
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .shareChooser{
+      margin-top: 10px;
+      background: rgba(255, 248, 238, 0.92);
+      border: 1px solid #e4d3bc;
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .shareTitle{
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      .header { align-items: flex-start; flex-direction: column; }
+      .badge { align-self: flex-start; }
+      .row, .actions { grid-template-columns: 1fr; }
+      .card { padding: 16px; }
+      .coverPage { transform: rotate(-0.4deg); padding: 30px 16px 44px; }
+      .coverPage::before, .coverPage::after { width: 78px; height: 20px; top: -10px; }
+      .prompt { font-size: 19px; }
+      .stage { padding: 14px; min-height: 170px; }
+      .polaroid { transform: rotate(-0.5deg); }
+      .photoNote { font-size: 16px; }
+    }
+
+    /* Print: image only */
+    @media print {
+      html, body {
+        background: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      body * {
+        display: none !important;
+      }
+      #photo {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-height: none !important;
+        object-fit: contain !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="postageLayer" aria-hidden="true"></div>
+  <div class="box">
+    <div id="coverPageWrap">
+      <div id="coverPage" class="coverPage">
+        <h2 id="coverTitle" class="coverTitle">Welcome to your very own Memory Arcade!</h2>
+        <button id="startBtn" class="primary coverStart">Start</button>
+      </div>
+    </div>
+
+    <div id="challengeShell" class="challengeShell hidden">
+      <div class="header">
+        <div>
+          <h1 id="title">🔒 Memory Locked</h1>
+          <div class="sub" id="stageSub">Complete the challenge to reveal and print this memory.</div>
+        </div>
+        <div class="badge" id="progress">Page 1 / 12</div>
+      </div>
+
+      <div class="progressWrap">
+        <div class="progressFill" id="progressFill"></div>
+      </div>
+
+      <div class="card">
+        <p class="prompt" id="prompt"></p>
+        <p class="guide" id="taskGuide"></p>
+
+        <!-- TEXT -->
+        <div id="textPanel" class="panel hidden">
+          <input id="answerInput" placeholder="Type your answer…" />
+          <button id="unlockTextBtn" class="primary">Unlock Memory</button>
+          <p id="feedbackText" class="feedback"></p>
+        </div>
+
+        <!-- CHOICE -->
+        <div id="choicePanel" class="panel hidden">
+          <div id="choices"></div>
+          <p id="feedbackChoice" class="feedback"></p>
+        </div>
+
+        <!-- AUDIO -->
+        <div id="audioPanel" class="panel hidden">
+          <p id="audioHint" class="helper"></p>
+          <div class="row" style="margin-top:10px;">
+            <button id="startRecBtn" class="primary">Start Recording</button>
+            <button id="stopRecBtn" class="secondary" disabled>Stop</button>
+          </div>
+          <div id="meter"><div id="meterFill"></div></div>
+          <p id="audioStatus" class="feedback"></p>
+          <p id="feedbackAudio" class="feedback"></p>
+        </div>
+
+        <!-- SELFIE -->
+        <div id="selfiePanel" class="panel hidden">
+          <p class="helper" id="selfieHint">Tip: start the camera, take a photo, and choose your favorite one.</p>
+          <div class="row" style="margin-top:10px;">
+            <button id="startCamBtn" class="primary">Start Camera</button>
+            <button id="captureBtn" class="secondary" disabled>Capture</button>
+          </div>
+          <video id="video" class="hidden" autoplay playsinline></video>
+          <canvas id="canvas"></canvas>
+          <div class="row" style="margin-top:10px;">
+            <button id="retakeBtn" class="secondary hidden">Retake Photo</button>
+            <button id="useSelfieBtn" class="primary hidden">Use this selfie to unlock</button>
+          </div>
+          <p id="feedbackSelfie" class="feedback"></p>
+        </div>
+
+        <!-- REVEAL -->
+        <div class="stage">
+          <div class="polaroid hidden" id="polaroid">
+            <img id="photo" />
+            <p class="photoNote" id="photoNote"></p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="printBtn" class="hidden secondary">Print this memory</button>
+          <button id="shareBtn" class="hidden secondary">Share</button>
+          <button id="nextBtn" class="hidden primary">Next Memory</button>
+        </div>
+        <div id="shareChooser" class="shareChooser hidden">
+          <p class="shareTitle">Share this memory as:</p>
+          <div class="row">
+            <button id="shareRawBtn" class="secondary">Raw Photo</button>
+            <button id="sharePolaroidBtn" class="secondary">Polaroid Photo</button>
+          </div>
+          <p id="shareFeedback" class="feedback"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
