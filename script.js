@@ -4,9 +4,9 @@ const IMAGE_BASE = "https://imageworker.r-c-kanaan.workers.dev";
 // ---------- CONFIG: 12 pages total ----------
 const pages = [
   // Text / Choice (3 total)
-  { type: "text",   prompt: "Fill in the gap:You're my ...",        answers: ["person", "everything"],      image: `${IMAGE_BASE}/1.jpg` },
-  { type: "choice", prompt: "What was the first Olivia Dean song you let me listen to?",       choices: ["Nice to Each other", "So Easy"],     correctIndex: 0,           image: `${IMAGE_BASE}/2.jpg` },
-  { type: "text",   prompt: "Write down the first thing that comes to your mind : Nivar ...", answers: ["trust a hoe", "trust a hoe bitch male or female"],  image: `${IMAGE_BASE}/3.jpg` },
+  { type: "text",   prompt: "Fill in the gap:You're my ...", answers: ["person", "everything"], image: `${IMAGE_BASE}/1.jpg` },
+  { type: "choice", prompt: "What was the first Olivia Dean song you let me listen to?", choices: ["Nice to Each other", "So Easy"], correctIndex: 0, image: `${IMAGE_BASE}/2.jpg` },
+  { type: "text",   prompt: "Write down the first thing that comes to your mind : Nivar ...", answers: ["trust a hoe", "trust a hoe bitch male or female"], image: `${IMAGE_BASE}/3.jpg` },
 
   // Audio (Guitar) forgiving (3 total)
   { type: "audio", mode: "guitar", prompt: "🎸 Play the A chord (or any chord) for 2 seconds.", minSeconds: 2.0, minRms: 0.02, image: `${IMAGE_BASE}/4.jpg` },
@@ -14,14 +14,14 @@ const pages = [
   { type: "audio", mode: "guitar", prompt: "🎸 Final guitar lock: 2 seconds, clear sound.",     minSeconds: 2.0, minRms: 0.03, image: `${IMAGE_BASE}/6.jpg` },
 
   // Audio (Singing) forgiving (3 total)
-  { type: "audio", mode: "sing",   prompt: "🎤 Hold any note for 2 seconds.",                    minSeconds: 2.0, minRms: 0.02, image: `${IMAGE_BASE}/7.jpg` },
-  { type: "audio", mode: "sing",   prompt: "🎤 Opera moment: 3 seconds.",                        minSeconds: 3.0, minRms: 0.02, image: `${IMAGE_BASE}/8.jpg` },
-  { type: "audio", mode: "sing",   prompt: "🎤 Sing/hum for 2 seconds (not a whisper).",         minSeconds: 2.0, minRms: 0.03, image: `${IMAGE_BASE}/9.jpg` },
+  { type: "audio", mode: "sing", prompt: "🎤 Hold any note for 2 seconds.",            minSeconds: 2.0, minRms: 0.02, image: `${IMAGE_BASE}/7.jpg` },
+  { type: "audio", mode: "sing", prompt: "🎤 Opera moment: 3 seconds.",                minSeconds: 3.0, minRms: 0.02, image: `${IMAGE_BASE}/8.jpg` },
+  { type: "audio", mode: "sing", prompt: "🎤 Sing/hum for 2 seconds (not a whisper).", minSeconds: 2.0, minRms: 0.03, image: `${IMAGE_BASE}/9.jpg` },
 
   // Selfie / Camera (3 total)
-  { type: "selfie", prompt: "🤳 Take a selfie with your biggest smile.",              image: `${IMAGE_BASE}/10.jpg` },
-  { type: "selfie", prompt: "🤳 Take a ‘serious movie poster’ selfie.",               image: `${IMAGE_BASE}/11.jpg` },
-  { type: "selfie", prompt: "🤳 Take a selfie holding the scrapbook page in frame.",  image: `${IMAGE_BASE}/12.jpg` },
+  { type: "selfie", prompt: "🤳 Take a selfie with your biggest smile.",             image: `${IMAGE_BASE}/10.jpg` },
+  { type: "selfie", prompt: "🤳 Take a ‘serious movie poster’ selfie.",              image: `${IMAGE_BASE}/11.jpg` },
+  { type: "selfie", prompt: "🤳 Take a selfie holding the scrapbook page in frame.", image: `${IMAGE_BASE}/12.jpg` },
 ];
 
 // ---------- STATE ----------
@@ -184,9 +184,7 @@ function getSuccessMessage(page) {
 
 function getPhotoNote(page) {
   if (page.photoNote) return page.photoNote;
-  if (page.type === "audio") {
-    return page.mode === "guitar" ? "You played this one open." : "You sang this one open.";
-  }
+  if (page.type === "audio") return page.mode === "guitar" ? "You played this one open." : "You sang this one open.";
   if (page.type === "selfie") return "A little snapshot of us.";
   return `Memory ${current + 1} / ${pages.length}`;
 }
@@ -204,18 +202,11 @@ function isAppleDevice() {
 
 function isNativeFileShareSupported(file) {
   if (!canNativeShare || !isAppleDevice() || !file) return false;
-  try {
-    return navigator.canShare({ files: [file] });
-  } catch {
-    return false;
-  }
+  try { return navigator.canShare({ files: [file] }); } catch { return false; }
 }
 
 function blobToFile(blob, filename) {
-  return new File([blob], filename, {
-    type: blob.type || "image/jpeg",
-    lastModified: Date.now(),
-  });
+  return new File([blob], filename, { type: blob.type || "image/jpeg", lastModified: Date.now() });
 }
 
 function downloadBlob(blob, filename) {
@@ -228,9 +219,7 @@ function downloadBlob(blob, filename) {
 }
 
 function canvasToBlob(canvasEl) {
-  return new Promise((resolve) => {
-    canvasEl.toBlob((blob) => resolve(blob), "image/jpeg", 0.95);
-  });
+  return new Promise((resolve) => canvasEl.toBlob((blob) => resolve(blob), "image/jpeg", 0.95));
 }
 
 function makeSelfieFilename() {
@@ -274,6 +263,7 @@ async function saveSubmittedSelfie() {
     }
   }
 
+  // NOTE: we are keeping the helper, but with your new selfie flow it won't get called on mobile
   downloadBlob(blob, filename);
   return { saved: true, method: "download", filename };
 }
@@ -366,11 +356,7 @@ async function shareFile(file) {
   }
 
   try {
-    await navigator.share({
-      files: [file],
-      title: "Scrapbook Memory",
-      text: "Unlocked memory",
-    });
+    await navigator.share({ files: [file], title: "Scrapbook Memory", text: "Unlocked memory" });
     setFeedback(shareFeedback, "Shared.", "good");
   } catch (err) {
     if (err?.name === "AbortError") {
@@ -388,13 +374,9 @@ async function shareRawPhoto() {
     prepareShareFiles();
     return toggleShareChooser(false);
   }
-  try {
-    await shareFile(cachedRawShareFile);
-  } catch {
-    if (taskGuideEl) taskGuideEl.innerText = "Could not prepare the raw photo for sharing.";
-  } finally {
-    toggleShareChooser(false);
-  }
+  try { await shareFile(cachedRawShareFile); }
+  catch { if (taskGuideEl) taskGuideEl.innerText = "Could not prepare the raw photo for sharing."; }
+  finally { toggleShareChooser(false); }
 }
 
 async function sharePolaroidPhoto() {
@@ -404,13 +386,9 @@ async function sharePolaroidPhoto() {
     prepareShareFiles();
     return toggleShareChooser(false);
   }
-  try {
-    await shareFile(cachedPolaroidShareFile);
-  } catch {
-    if (taskGuideEl) taskGuideEl.innerText = "Could not prepare the polaroid image.";
-  } finally {
-    toggleShareChooser(false);
-  }
+  try { await shareFile(cachedPolaroidShareFile); }
+  catch { if (taskGuideEl) taskGuideEl.innerText = "Could not prepare the polaroid image."; }
+  finally { toggleShareChooser(false); }
 }
 
 function printImageOnly() {
@@ -441,11 +419,7 @@ function printImageOnly() {
   const img = printWindow.document.querySelector("img");
   if (!img) return;
 
-  const runPrint = () => {
-    printWindow.print();
-    printWindow.close();
-  };
-
+  const runPrint = () => { printWindow.print(); printWindow.close(); };
   if (img.complete) runPrint();
   else img.onload = runPrint;
 }
@@ -470,23 +444,30 @@ function setLockedUI() {
 function unlock() {
   unlocked = true;
   const page = pages[current];
+
   titleEl.innerText = `🔓 Page ${current + 1} Unlocked`;
   if (stageSubEl) stageSubEl.innerText = "Unlocked. Print it or continue to the next page.";
   if (taskGuideEl) taskGuideEl.innerText = "Take a second to enjoy this one.";
-  photoEl.src = pages[current].image;
+
+  // ✅ cache-bust for iOS Safari
+  const v = "20260208b"; // change this whenever you redeploy
+  photoEl.src = `${page.image}?v=${v}`;
+
   photoEl.style.display = "block";
   photoEl.classList.add("reveal");
+
   if (photoNoteEl) photoNoteEl.innerText = getPhotoNote(page);
   if (polaroidEl) polaroidEl.classList.remove("hidden");
+
   printBtn.classList.remove("hidden");
   if (canNativeShare && isAppleDevice()) shareBtn.classList.remove("hidden");
+
   nextBtn.classList.remove("hidden");
   nextBtn.innerText = current + 1 === pages.length ? "Finish Story" : "Next Memory";
 
   if (unlockTextBtn) unlockTextBtn.disabled = true;
-  if (page.type === "selfie") {
-    setFeedback(feedbackSelfie, getSuccessMessage(page), "good");
-  }
+  if (page.type === "selfie") setFeedback(feedbackSelfie, getSuccessMessage(page), "good");
+
   prepareShareFiles();
 }
 
@@ -715,26 +696,17 @@ async function captureSelfie() {
   setFeedback(feedbackSelfie, "Nice shot. Keep it or retake one more.", "");
 }
 
+// ✅ UPDATED: no auto-download / no filesystem saving
 async function useSelfieToUnlock() {
   const page = pages[current];
+
+  // Important for iOS Safari stability
+  stopCameraIfRunning();
+
+  // Just unlock and reveal the memory image
   unlock();
-  const result = await saveSubmittedSelfie();
 
-  if (!result.saved) {
-    setFeedback(feedbackSelfie, `${getSuccessMessage(page)} We could not save the selfie file.`, "bad");
-    return;
-  }
-
-  if (result.method === "filesystem") {
-    setFeedback(feedbackSelfie, `${getSuccessMessage(page)} Saved in \"submitted images\" as ${result.filename}.`, "good");
-    return;
-  }
-
-  setFeedback(
-    feedbackSelfie,
-    `${getSuccessMessage(page)} Downloaded as ${result.filename}; move it into \"submitted images\".`,
-    "good"
-  );
+  setFeedback(feedbackSelfie, getSuccessMessage(page), "good");
 }
 
 function stopCameraIfRunning() {
@@ -769,7 +741,6 @@ function loadPage() {
     answerInput.focus();
   }
 
-  // IMPORTANT: render the choice buttons
   if (page.type === "choice") {
     choicePanel.classList.remove("hidden");
     renderChoices();
@@ -778,8 +749,7 @@ function loadPage() {
   if (page.type === "audio") {
     audioPanel.classList.remove("hidden");
     const modeLabel = page.mode === "guitar" ? "guitar" : "voice";
-    audioHint.innerText =
-      `Quick checklist: a quiet spot, clear ${modeLabel}, and about ${page.minSeconds.toFixed(1)} seconds.`;
+    audioHint.innerText = `Quick checklist: a quiet spot, clear ${modeLabel}, and about ${page.minSeconds.toFixed(1)} seconds.`;
     startRecBtn.disabled = false;
     stopRecBtn.disabled = true;
     meterFill.style.width = "0%";
