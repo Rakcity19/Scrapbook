@@ -4,9 +4,9 @@ const IMAGE_BASE = "https://imageworker.r-c-kanaan.workers.dev";
 // ---------- CONFIG: 12 pages total ----------
 const pages = [
   // Text / Choice (3 total)
-  { type: "text",   prompt: "Where was this photo taken?",        answers: ["amman", "abdoun"],      image: `${IMAGE_BASE}/1.jpg` },
-  { type: "choice", prompt: "Before or after graduation?",       choices: ["Before", "After"],     correctIndex: 0,           image: `${IMAGE_BASE}/2.jpg` },
-  { type: "text",   prompt: "What song were you obsessed with?", answers: ["yellow", "coldplay"],  image: `${IMAGE_BASE}/3.jpg` },
+  { type: "text",   prompt: "Fill in the gap:You're my ...",        answers: ["person", "everything"],      image: `${IMAGE_BASE}/1.jpg` },
+  { type: "choice", prompt: "What was the first Olivia Dean song you let me listen to?",       choices: ["Nice to Each other", "So Easy"],     correctIndex: 0,           image: `${IMAGE_BASE}/2.jpg` },
+  { type: "text",   prompt: "Write down the first thing that comes to your mind : Nivar ...", answers: ["trust a hoe", "trust a hoe bitch male or female"],  image: `${IMAGE_BASE}/3.jpg` },
 
   // Audio (Guitar) forgiving (3 total)
   { type: "audio", mode: "guitar", prompt: "🎸 Play the A chord (or any chord) for 2 seconds.", minSeconds: 2.0, minRms: 0.02, image: `${IMAGE_BASE}/4.jpg` },
