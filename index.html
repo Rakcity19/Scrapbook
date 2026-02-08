@@ -385,33 +385,12 @@
       .polaroid { transform: rotate(-0.5deg); }
       .photoNote { font-size: 16px; }
     }
-
-    /* Print: image only */
-    @media print {
-      html, body {
-        background: #fff !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      body * {
-        display: none !important;
-      }
-      #photo {
-        display: block !important;
-        position: static !important;
-        width: 100% !important;
-        max-height: none !important;
-        object-fit: contain !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        margin: 0 !important;
-      }
-    }
   </style>
 </head>
 
 <body>
   <div id="postageLayer" aria-hidden="true"></div>
+
   <div class="box">
     <div id="coverPageWrap">
       <div id="coverPage" class="coverPage">
@@ -491,6 +470,7 @@
           <button id="shareBtn" class="hidden secondary">Share</button>
           <button id="nextBtn" class="hidden primary">Next Memory</button>
         </div>
+
         <div id="shareChooser" class="shareChooser hidden">
           <p class="shareTitle">Share this memory as:</p>
           <div class="row">
@@ -499,10 +479,12 @@
           </div>
           <p id="shareFeedback" class="feedback"></p>
         </div>
+
       </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- IMPORTANT: cache-bust so online always uses latest JS -->
+  <script src="script.js?v=20260208"></script>
 </body>
 </html>
